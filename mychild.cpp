@@ -3,18 +3,35 @@
 MyCHILD::MyCHILD()
 {
     setAttribute(Qt::WA_DeleteOnClose);//关闭窗口时销毁
-     isUntited=true;
+     isUntitled=true;
 }
-    void newFile(){//新建文件
+    void MyCHILD:: newFile(){//新建文件
         static int sequenceNumber =1;
         isUntitled =true;
         curFile =tr("word文档=%1").arg(sequenceNumber++);
         setWindowTitle(curFile);
 
     }
-    bool loadFile(const QString &fileName)//导入文件
+    bool MyCHILD::loadFile(const QString &fileName)//导入文件
     {
-
+    if(fileName.isEmpty()){
+    return false;
+    QFile file(fileName);
+    if(!file.open(QFile::ReadOnly))
+        return false;
+    QByteArray data=file.readAll();
+    QTextCodec *codex =Qt::codecForHtml(data);
+    QString str =codec->toUnicode(data);
+    if(Qt::mightBeRichText(str)){//如果是富文件
+        textEdit->setHtml(str);
+    }else//否则不是富文件
+    {
+        str=QString::fromLocal8Bit(data);
+        this->setPlainText(str);
+    }
+    setCurrentFile(fileName);
+    connect(document(),SIGNAL(contentChanged()),this,SLOT(documentWasModified()));
+}
         }
     bool save(){
 
