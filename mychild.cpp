@@ -1,6 +1,7 @@
 #include "mychild.h"
 #include<QtWidgets>
-MyCHILD::MyCHILD()
+MyCHILD::MyCHILD(QWidget *parent)
+     : QMainWindow(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);//关闭窗口时销毁
      isUntitled=true;
@@ -21,7 +22,7 @@ MyCHILD::MyCHILD()
         return false;
     QByteArray data=file.readAll();
     QTextCodec *codex =Qt::codecForHtml(data);
-    QString str =codec->toUnicode(data);
+    QString str =codex->toUnicode(data);
     if(Qt::mightBeRichText(str)){//如果是富文件
         textEdit->setHtml(str);
     }else//否则不是富文件
@@ -34,7 +35,11 @@ MyCHILD::MyCHILD()
 }
         }
     bool save(){
-
+        if(isUntitled){
+            return saveAs();
+        }else{
+            return saveFile(curFile);
+        }
     }
     //保存文件
     bool saveAs(){//另存为文件
