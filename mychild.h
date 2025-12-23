@@ -1,11 +1,12 @@
 #ifndef MYCHILD_H
 #define MYCHILD_H
-
+#include<QMainWindow>
 #include <QTextEdit>
-class MyCHILD
-{
+class MyCHILD: public QMainWindow
+{ Q_OBJECT
 public:
-    MyCHILD();
+    explicit MyCHILD(QWidget *parent =nullptr);
+
 
     void newFile();//新建文件
     bool loadFile(const QString &fileName);//导入文件
@@ -24,8 +25,8 @@ private slots:
 
 private:
     QString curFile;
-    bool isUntited;//判断标题
-
+    bool isUntitled;//判断标题
+    QTextEdit *textEdit;
     bool maybeSave();
     void setCurrentFile(const QString &fileName);
     QString strippedName(const QString &fullfileName);
