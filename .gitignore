@@ -1,0 +1,21 @@
+# Qt build output
+build/
+build-*/
+
+# Qt Creator user files
+*.pro.user
+*.user
+
+# Object files
+*.o
+*.obj
+
+# Executables
+*.exe
+
+# Libraries
+*.dll
+
+# Temporary files
+*.autosave
+*.tmp
