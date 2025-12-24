@@ -28,13 +28,14 @@ MyCHILD::MyCHILD(QWidget *parent)
     }else//否则不是富文件
     {
         str=QString::fromLocal8Bit(data);
-        this->setPlainText(str);
+        textEdit->setPlainText(str);
     }
     setCurrentFile(fileName);
-    connect(document(),SIGNAL(contentChanged()),this,SLOT(documentWasModified()));
+    connect(textEdit->document(),SIGNAL(contentChanged()),this,SLOT(documentWasModified()));
 }
+    return true;
         }
-    bool save(){
+    bool MyCHILD:: save(){
         if(isUntitled){
             return saveAs();
         }else{
@@ -42,43 +43,57 @@ MyCHILD::MyCHILD(QWidget *parent)
         }
     }
     //保存文件
-    bool saveAs(){//另存为文件
-
+    bool MyCHILD::saveAs(){//另存为文件
+    QString fileName=QFileDialog::getSaveFileName(this,
+    tr("另存为"),curFile,
+    tr("HTML 文档(*.html);;所有文件(*.*)"));
+   if(fileName.isEmpty())
+       return false;
+   return saveFile(fileName);
     }
 
-    bool saveFile(QString fileName){
-
+    bool MyCHILD::saveFile(QString fileName){
+    if(!(fileName.endsWith(".htm",Qt::CaseInsensitive)||fileName.endsWith(".html",Qt::CaseInsensitive())))
+    {
+            //默认保存文件为HTML
+            fileName+=".html";
+    }
+            QTextDocumentWriter writer(fileName);
+            bool success=writer.write(this->document());
+            if(success)
+            setCurrentFile(fileName);
+            return success;
     }
     QString userFrinrlyCurrentFile(){
 
     }
 
-    void mergeFormationOnWordOrSelection(const QTextCharFormat &Format){
+    void MyCHILD::mergeFormationOnWordOrSelection(const QTextCharFormat &Format){
 
     }
     //格式化字体设置
-    void setAligin(int align){//对齐
+    void MyCHILD::setAligin(int align){//对齐
 
     }
-    void setStyle(int style){
-
-    }
-
-    void closeEvent(QCloseEvent *event){
+    void MyCHILD::setStyle(int style){
 
     }
 
-    void documentWasModified(){
+    void MyCHILD::closeEvent(QCloseEvent *event){
 
     }
 
-    bool maybeSave(){
+    void MyCHILD::documentWasModified(){
 
     }
-    void setCurrentFile(const QString &fileName){
+
+    bool MyCHILD::maybeSave(){
 
     }
-    QString strippedName(const QString &fullfileName){
+    void MyCHILD::setCurrentFile(const QString &fileName){
+
+    }
+    QString MyCHILD::strippedName(const QString &fullfileName){
 
     }
 
