@@ -1,5 +1,6 @@
 #include "mychild.h"
 #include<QtWidgets>
+#include <QMessageBox>
 MyCHILD::MyCHILD(QWidget *parent)
      : QMainWindow(parent)
 {
@@ -53,48 +54,142 @@ MyCHILD::MyCHILD(QWidget *parent)
     }
 
     bool MyCHILD::saveFile(QString fileName){
-    if(!(fileName.endsWith(".htm",Qt::CaseInsensitive)||fileName.endsWith(".html",Qt::CaseInsensitive())))
+    if(!(fileName.endsWith(".htm",
+      Qt::CaseInsensitive)||fileName.endsWith(".html",Qt::CaseInsensitive)))
     {
             //默认保存文件为HTML
             fileName+=".html";
     }
             QTextDocumentWriter writer(fileName);
-            bool success=writer.write(this->document());
+            bool success=writer.write(textEdit->document());
             if(success)
             setCurrentFile(fileName);
             return success;
     }
-    QString userFrinrlyCurrentFile(){
+    QString MyCHILD::userFriendlyCurrentFile(){
+    return strippedName(curFile);
 
     }
-
+   //格式化字体设置
     void MyCHILD::mergeFormationOnWordOrSelection(const QTextCharFormat &Format){
+        QTextCursor cursor=textEdit->textCursor();
+        if(!cursor.hasSelection()){
+            cursor.select(QTextCursor::WordUnderCursor);
+            cursor.mergeCharFormat(Format);
+            textEdit->mergeCurrentCharFormat(Format);
+        }
+    }
+    //段落对齐设置
+    void MyCHILD::setAligin(int align){
+    if(align==1){
+        textEdit->setAlignment(Qt::AlignLeft |Qt::AlignAbsolute);
+    }else if(align==2){
+        textEdit->setAlignment(Qt::AlignCenter);
+    }else if(align==3){
+        textEdit->setAlignment(Qt::AlignRight);
+    }else if(align==4){
+        textEdit->setAlignment(Qt::AlignJustify);
+    }
 
     }
-    //格式化字体设置
-    void MyCHILD::setAligin(int align){//对齐
-
-    }
+    //断落编号
     void MyCHILD::setStyle(int style){
+    //多行文本框文本光标插入文本
+        if(style!=0){
+            QTextListFormat::Style stylename=QTextListFormat::ListDisc;//圆圈
+            switch(style){
+            deault:
+            case 1:
+                stylename=QTextListFormat::ListDisc;//圆圈
+                break;
+            case 2:
+                stylename=QTextListFormat::ListCircle;//空心圆
+                break;
+            case 3:
+                stylename=QTextListFormat::ListSquare;//方块
+                break;
+            case 4:
+                stylename=QTextListFormat::ListDecimal;//阿拉伯数字
+                break;
+            case 5:
+                stylename=QTextListFormat::ListLowerAlpha;//小写拉丁字符,按字母顺序
+                break;
+            case 6:
+               stylename=QTextListFormat::ListUpperAlpha;//大写拉丁字符,按字母顺序
+                break;
+            case 7:
+                stylename=QTextListFormat::ListLowerRoman;//小写罗马数字
+                break;
+            case 8:
+                stylename=QTextListFormat::ListUpperRoman;//大写罗马数字
+                break;
+                cursor.beginEditBlock();
+                QTextBlockFormat blockFmt=cursor.blockFormat();
+                QTextListFormat listFmt;
+                if(cursor.currentList())
+                {
+                    listFmt.cursor.currentList()->format();
+                }else
+                {
+                    listFmt=setIndent(blockFmt.indent()+1);
+                    blockFmt.setIndent(0);
+                    cursor.setBlockFormat(blockFmt);
+                }
+                listFmt.setStyle(stylename);
+                cursor.createList(listFmt);
+                cursor.endEditBlock();
+            }
+            else{
+                QTextBlockFormat bfmt;
+                bfmt.setObjectIndex(-1);
+                cursor.mergeBlockFormat(bfmt);
+            }
+        }
+        QTextCursor cursor=textEdit->textCursor();
 
     }
 
     void MyCHILD::closeEvent(QCloseEvent *event){
-
+    if(maybeSave()){
+        event->accept();
+    }else{
+        event->ignore();
+    }
     }
 
     void MyCHILD::documentWasModified(){
-
+//在设置改变时,设置窗口已经修改
+        setWindowModified(textEdit->document()->isModified());
     }
 
-    bool MyCHILD::maybeSave(){
+    bool MyCHILD::maybeSave(){//判断是否修改且保存文件
+    if(!textEdit->document()->isModified())
+       { return true;
+    }
+        QMessageBox::StandardButton ret;
+        ret= QMessageBox::warning(
+           this,
+           tr("Qt Word"),
+        tr("文件'%1'已经被修改,是否保存么?")
+          .arg(userFriendlyCurrentFile()),
+        QMessageBox::Save|QMessageBox::Discard|QMessageBox::Cancel);
+                if(ret==QMessageBox::Save){
+            return save();
+        }else if(ret==QMessageBox::Cancel){
+            return false;
+        }return true;
 
     }
     void MyCHILD::setCurrentFile(const QString &fileName){
+        curFile=QFileInfo(fileName).canonicalFilePath();
+        isUntitled=false;
+        textEdit->document()->setModified(false);
+        setWindowModified(false);
+        setWindowTitle(userFriendlyCurrentFile()+"[*]");
 
     }
     QString MyCHILD::strippedName(const QString &fullfileName){
-
+    return QFileInfo(fullfileName).fileName();
     }
 
 

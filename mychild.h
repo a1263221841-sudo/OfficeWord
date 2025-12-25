@@ -2,6 +2,8 @@
 #define MYCHILD_H
 #include<QMainWindow>
 #include <QTextEdit>
+
+
 class MyCHILD: public QMainWindow
 { Q_OBJECT
 public:
@@ -13,7 +15,7 @@ public:
     bool save();//保存文件
     bool saveAs();//另存为文件
     bool saveFile(QString fileName);
-    QString userFrinrlyCurrentFile();
+    QString userFriendlyCurrentFile();
     QString currentFile(){ return curFile;}
     void mergeFormationOnWordOrSelection(const QTextCharFormat &Format);//格式化字体设置
     void setAligin(int align);//对齐
