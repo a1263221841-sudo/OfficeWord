@@ -6,6 +6,8 @@ MyCHILD::MyCHILD(QWidget *parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);//关闭窗口时销毁
      isUntitled=true;
+     textEdit = new QTextEdit(this);
+         setCentralWidget(textEdit);
 }
     void MyCHILD:: newFile(){//新建文件
         static int sequenceNumber =1;
@@ -95,10 +97,12 @@ MyCHILD::MyCHILD(QWidget *parent)
     //断落编号
     void MyCHILD::setStyle(int style){
     //多行文本框文本光标插入文本
+         QTextCursor cursor = textEdit->textCursor();
         if(style!=0){
             QTextListFormat::Style stylename=QTextListFormat::ListDisc;//圆圈
             switch(style){
-            deault:
+            default:
+                return;
             case 1:
                 stylename=QTextListFormat::ListDisc;//圆圈
                 break;
@@ -123,15 +127,16 @@ MyCHILD::MyCHILD(QWidget *parent)
             case 8:
                 stylename=QTextListFormat::ListUpperRoman;//大写罗马数字
                 break;
+            }
                 cursor.beginEditBlock();
                 QTextBlockFormat blockFmt=cursor.blockFormat();
                 QTextListFormat listFmt;
                 if(cursor.currentList())
                 {
-                    listFmt.cursor.currentList()->format();
+                    listFmt=cursor.currentList()->format();
                 }else
                 {
-                    listFmt=setIndent(blockFmt.indent()+1);
+                    listFmt.setIndent(blockFmt.indent()+1);
                     blockFmt.setIndent(0);
                     cursor.setBlockFormat(blockFmt);
                 }
@@ -144,8 +149,8 @@ MyCHILD::MyCHILD(QWidget *parent)
                 bfmt.setObjectIndex(-1);
                 cursor.mergeBlockFormat(bfmt);
             }
-        }
-        QTextCursor cursor=textEdit->textCursor();
+
+      //  QTextCursor cursor=textEdit->textCursor();
 
     }
 
