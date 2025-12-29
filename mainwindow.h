@@ -2,6 +2,24 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+//添加相关的头文件
+#include <QPrintDialog>
+#include <QtWidgets>
+#include <mychild.h>
+#include<QPrinter>
+#include<QPrintPreviewDialog>
+
+class MyChild;
+
+class QAction;//被创建后必须添加到菜单和工具栏,然后将它链接到实现的Action功能的槽函数
+class QMenu;//此为菜单栏,菜单QMenus是挂载在菜单栏QMenuBar(容器)上面的.
+class QComboBox;//选项列表(组合框)
+class QFontComboBox;//字体下拉列表框(不能被编辑,只是被用来选择字体)
+class QMdiArea;//提供一个可以同时显示多个文档的区域
+class QMdiSbuWindow;//大多数复杂的项目软件,都是使用MDI框架
+class QSignalMapper;//此类专门收集一系列无参信号
+
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -14,8 +32,92 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+protected:
+    void closeEvent(QCloseEvent *event);//通过参数event来控制参数是否让窗口关闭
 
 private:
+    void fileNew();//新建文件
+    void fileopen();//打开
+    void fileSave();//保存
+    void fileSaveAS();//另存为
+    void filePrintPrivew();//文件打开预览
+    void filePreviw();//打印
+    void undo();//撤销
+    void redo();//重做
+    void cut();//剪切
+    void copy();//复制
+    void paste();//粘贴
+    void about();// 关于
+
+
+    void textBold();
+    void textItalic();
+    void textUnderline();
+    void textAligh(QAction *a);
+    void textStyle(int styleIndex);
+    void textFamily(const QString &f);
+    void textSize(const QString &p);
+    void textColoe();
+
+
+    void updateMenus();//更新菜单
+    void updateWindowMenus();//更新
+    void setActiveSubWindow(QWidget *window);
+    MyCHILD *createMyCHILD;
+
+
+
+private:
+    void createActions();//创建菜单操作(动作)
+    void createMenus();//创建菜单
+    void createToolBars();//创建工具条
+    void createStatusBars();//创建状态条
+    void enableText();//可移动文本
+    void fontChanged(const QFont &f);
+    void colorChanged(const QColor &c);
+    void alignmentChanged(Qt::Alignment a);//对齐改变
+    MyChild *activeMyChild();
+    QMdiSubWindow *findMyChild(const QString &filename);
+
+    QMdiArea *mdiArea;//多文档窗口容器的容器管理器
+    QSignalMapper *windowMapper;
+
+    //定义菜单
+    QMenu *fileMenu();//文件菜单
+    QMenu *eidtMenu();//编辑菜单
+    QMenu *formatMenu();//格式菜单
+    QMenu *fontMenu();//字体菜单
+    QMenu *alignMenu();//对齐菜单
+    QMenu *windowMenu();
+    QMenu *helpMenu();
+
+    //工具栏
+    QToolBar *fileToolBar;
+    QToolBar *editToolBar;
+    QToolBar *formatToolBar;
+    QToolBar *comboToolBar;
+    QComboBox *comboStyle; //子控件,标准组合框
+
+    QFontComboBox *comboFort;//子控件,字体组合框
+    QFontComboBox *comboSize;//子控件,字体大小的组合框
+
+    //菜单动作(Action)
+    QAction *newAct;
+    QAction *openAct;
+    QAction *saveAct;
+    QAction *saveAsAct;
+    QAction *printAct;
+    QAction *printPreviewAct;
+    QAction *exitAct;
+
+    //编剧
+    QAction *
+
+
+
+
+
+
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
