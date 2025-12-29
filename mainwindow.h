@@ -63,7 +63,7 @@ private:
     void updateMenus();//更新菜单
     void updateWindowMenus();//更新
     void setActiveSubWindow(QWidget *window);
-    MyCHILD *createMyCHILD;
+    MyCHILD *createMyCHILD();
 
 
 
@@ -110,8 +110,32 @@ private:
     QAction *printPreviewAct;
     QAction *exitAct;
 
-    //编剧
-    QAction *
+
+    QAction *undoAct;
+    QAction *redoAct;
+    QAction *cutAct;
+    QAction *copyAct;
+    QAction *pastAct;
+
+    QAction *boldAct;
+    QAction *italicAct;
+    QAction *underlineAct;
+    QAction *leftAlignAct;
+    QAction *cneterAct;
+    QAction *rightAlignAct;
+    QAction *justifyAct;
+    QAction *colorAct;
+
+    QAction *closeAct;
+    QAction *closeAllAct;
+    QAction *tileAct;
+    QAction *cascadeAct;
+    QAction *nextAct;
+    QAction *previousAct;
+    QAction *separatorAct;
+
+    QAction *aboutAct;
+    QAction *aboutQtAct;
 
 
 
