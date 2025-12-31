@@ -16,7 +16,7 @@ class QMenu;//此为菜单栏,菜单QMenus是挂载在菜单栏QMenuBar(容器)�
 class QComboBox;//选项列表(组合框)
 class QFontComboBox;//字体下拉列表框(不能被编辑,只是被用来选择字体)
 class QMdiArea;//提供一个可以同时显示多个文档的区域
-class QMdiSbuWindow;//大多数复杂的项目软件,都是使用MDI框架
+class QMdiSubWindow;//大多数复杂的项目软件,都是使用MDI框架
 class QSignalMapper;//此类专门收集一系列无参信号
 
 
@@ -37,11 +37,13 @@ protected:
 
 private:
     void fileNew();//新建文件
-    void fileopen();//打开
+    void fileOpen();//打开
     void fileSave();//保存
     void fileSaveAS();//另存为
-    void filePrintPrivew();//文件打开预览
-    void filePreviw();//打印
+    void filePrint();//打印
+    void filePrintPreview();//文件打印预览
+    void printPreview(QPrinter *);//打印预览
+
     void undo();//撤销
     void redo();//重做
     void cut();//剪切
@@ -57,7 +59,7 @@ private:
     void textStyle(int styleIndex);
     void textFamily(const QString &f);
     void textSize(const QString &p);
-    void textColoe();
+    void textColor();
 
 
     void updateMenus();//更新菜单
@@ -76,15 +78,15 @@ private:
     void fontChanged(const QFont &f);
     void colorChanged(const QColor &c);
     void alignmentChanged(Qt::Alignment a);//对齐改变
-    MyChild *activeMyChild();
+    MyCHILD *activeMyChild()const;
     QMdiSubWindow *findMyChild(const QString &filename);
 
     QMdiArea *mdiArea;//多文档窗口容器的容器管理器
     QSignalMapper *windowMapper;
 
     //定义菜单
-    QMenu *fileMenu();//文件菜单
-    QMenu *eidtMenu();//编辑菜单
+    QMenu *fileMenu;//文件菜单
+    QMenu *editMenu;//编辑菜单
     QMenu *formatMenu();//格式菜单
     QMenu *fontMenu();//字体菜单
     QMenu *alignMenu();//对齐菜单
