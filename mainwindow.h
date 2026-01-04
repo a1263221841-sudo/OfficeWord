@@ -117,7 +117,7 @@ private:
     QAction *redoAct;
     QAction *cutAct;
     QAction *copyAct;
-    QAction *pastAct;
+    QAction *pasteAct;
 
     QAction *boldAct;
     QAction *italicAct;
