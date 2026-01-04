@@ -164,7 +164,8 @@ void MainWindow::createActions()//创建菜单操作(动作)
 
     //<格式>-->段落菜单动作
     //居中
-    centera
+    centerAct=new QAction(QIcon(srcpaths+"textcenter.png"),tr("水平居中"),this);
+    centerAct;
 }
 void MainWindow::createMenus()//创建菜单
 {

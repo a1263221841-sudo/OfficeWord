@@ -123,7 +123,7 @@ private:
     QAction *italicAct;
     QAction *underlineAct;
     QAction *leftAlignAct;
-    QAction *cneterAct;
+    QAction *centerAct;
     QAction *rightAlignAct;
     QAction *justifyAct;
     QAction *colorAct;
