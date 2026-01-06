@@ -55,7 +55,7 @@ private:
     void textBold();
     void textItalic();
     void textUnderline();
-    void textAligh(QAction *a);
+    void textAlign(QAction *a);
     void textStyle(int styleIndex);
     void textFamily(const QString &f);
     void textSize(const QString &p);
@@ -63,7 +63,7 @@ private:
 
 
     void updateMenus();//更新菜单
-    void updateWindowMenus();//更新
+    void updateWindowMenu();//更新
     void setActiveSubWindow(QWidget *window);
     MyCHILD *createMyCHILD();
 
@@ -87,11 +87,11 @@ private:
     //定义菜单
     QMenu *fileMenu;//文件菜单
     QMenu *editMenu;//编辑菜单
-    QMenu *formatMenu();//格式菜单
-    QMenu *fontMenu();//字体菜单
-    QMenu *alignMenu();//对齐菜单
-    QMenu *windowMenu();
-    QMenu *helpMenu();
+    QMenu *formatMenu;//格式菜单
+    QMenu *fontMenu;//字体菜单
+    QMenu *alignMenu;//对齐菜单
+    QMenu *windowMenu;
+    QMenu *helpMenu;
 
     //工具栏
     QToolBar *fileToolBar;
@@ -100,8 +100,8 @@ private:
     QToolBar *comboToolBar;
     QComboBox *comboStyle; //子控件,标准组合框
 
-    QFontComboBox *comboFort;//子控件,字体组合框
-    QFontComboBox *comboSize;//子控件,字体大小的组合框
+    QFontComboBox *comboFont;//子控件,字体组合框
+    QComboBox *comboSize;//子控件,字体大小的组合框
 
     //菜单动作(Action)
     QAction *newAct;
