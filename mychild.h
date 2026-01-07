@@ -9,6 +9,8 @@ class MyCHILD: public QMainWindow
 public:
     explicit MyCHILD(QWidget *parent =nullptr);
 
+    QTextCursor textCursor() const;
+    bool hasSelection() const;
 
     void newFile();//新建文件
     bool loadFile(const QString &fileName);//导入文件

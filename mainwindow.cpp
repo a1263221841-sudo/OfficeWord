@@ -37,16 +37,80 @@ MainWindow::~MainWindow()
 }
 void MainWindow::closeEvent(QCloseEvent *event)//通过参数event来控制参数是否让窗口关闭
 {
-
+    mdiArea->closeAllSubWindows();
+    if(mdiArea->currentSubWindow()){
+        event->ignore();
+    }else{
+        event->accept();
+    }
 }
 
 void MainWindow::updateMenus()//更新菜单
 {
+    bool hasmychild=(activeMyChild()!=0);
 
+    saveAct->setEnabled(hasmychild);
+    saveAsAct->setEnabled(hasmychild);
+    printAct->setEnabled(hasmychild);
+    printPreviewAct->setEnabled(hasmychild);
+    pasteAct->setEnabled(hasmychild);
+
+    closeAct->setEnabled(hasmychild);
+    closeAllAct->setEnabled(hasmychild);
+    tileAct->setEnabled(hasmychild);
+    cascadeAct->setEnabled(hasmychild);
+    nextAct->setEnabled(hasmychild);
+    previousAct->setEnabled(hasmychild);
+    separatorAct->setEnabled(hasmychild);
+
+    bool hasSelection=(activeMyChild()&& activeMyChild()->textCursor().hasSelection());
+    cutAct->setEnabled(hasmychild);
+    copyAct->setEnabled(hasmychild);
+    boldAct->setEnabled(hasmychild);
+    italicAct->setEnabled(hasmychild);
+    underlineAct->setEnabled(hasmychild);
+    leftAlignAct->setEnabled(hasmychild);
+    centerAct->setEnabled(hasmychild);
+    rightAlignAct->setEnabled(hasmychild);
+    justifyAct->setEnabled(hasmychild);
+    colorAct->setEnabled(hasmychild);
 }
 
 void MainWindow::updateWindowMenu()//更新窗口菜单
 {
+    windowMenu->clear();
+    windowMenu->addAction(closeAct);
+    windowMenu->addAction(closeAllAct);
+    windowMenu->addSeparator();
+
+    windowMenu->addAction(tileAct);
+    windowMenu->addAction(cascadeAct);
+    windowMenu->addSeparator();
+
+    windowMenu->addAction(nextAct);
+    windowMenu->addAction(previousAct);
+    windowMenu->addAction(separatorAct);
+
+    QList<QMdiSubWindow*>windows=mdiArea->subWindowList();
+    separatorAct->setVisible(!windows.isEmpty());
+
+    //显示当前打开着的文档子窗口项
+    for(int i=1;i<windows.size();i++)
+    {
+        MyChild*child=qobject_cast<MyChild*>(windows.at(i)->widget());
+
+        QString text;
+        if(i<9){
+            text=tr("&%1 %2").arg(i+1).arg(child->userFriedlyCurrentFile());
+        }
+    else {
+        text=tr("&%1 %2").arg(i+1).arg(child->userFriendlyCurrentFile());
+    }
+        QAction *action=windowMenu->addAction(text);
+        action->setCheckable(true);
+        action->setCheckable(child==activeMyChild());
+        connect(action,&QAction::triggered,this,&windowMapper::map);
+        windowMapper->setMapping(action,windows,at(i));
 
 }
 
@@ -366,7 +430,7 @@ void MainWindow::createToolBars()//创建工具条
 
    QFontDatabase db;
    foreach(int size,db.smoothSizes())
-       comboSize->addItem(QString::number::number(size));
+       comboSize->addItem(QString::number(size));
 
 }
 void MainWindow::createStatusBars()//创建状态条
