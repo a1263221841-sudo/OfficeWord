@@ -5,12 +5,12 @@
 //添加相关的头文件
 #include <QPrintDialog>
 #include <QtWidgets>
-#include <mychild.h>
+//#include <mychild.h>
 #include<QPrinter>
 #include<QPrintPreviewDialog>
+#include<QSignalMapper>
 
 class MyChild;
-
 class QAction;//被创建后必须添加到菜单和工具栏,然后将它链接到实现的Action功能的槽函数
 class QMenu;//此为菜单栏,菜单QMenus是挂载在菜单栏QMenuBar(容器)上面的.
 class QComboBox;//选项列表(组合框)
@@ -29,9 +29,12 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+
+
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    MyChild *createMyChild();
 protected:
     void closeEvent(QCloseEvent *event);//通过参数event来控制参数是否让窗口关闭
 
@@ -57,7 +60,7 @@ private:
     void textUnderline();
     void textAlign(QAction *a);
     void textStyle(int styleIndex);
-    void textFamily(const QString &f);
+    void textFamily(const QFont &f);
     void textSize(const QString &p);
     void textColor();
 
@@ -65,7 +68,7 @@ private:
     void updateMenus();//更新菜单
     void updateWindowMenu();//更新
     void setActiveSubWindow(QWidget *window);
-    MyCHILD *createMyCHILD();
+    //MyChild *createMyChild();
 
 
 
@@ -78,7 +81,7 @@ private:
     void fontChanged(const QFont &f);
     void colorChanged(const QColor &c);
     void alignmentChanged(Qt::Alignment a);//对齐改变
-    MyCHILD *activeMyChild()const;
+    MyChild *activeMyChild()const;
     QMdiSubWindow *findMyChild(const QString &filename);
 
     QMdiArea *mdiArea;//多文档窗口容器的容器管理器

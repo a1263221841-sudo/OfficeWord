@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "mychild.h"
 //统一图标来源,主要目的是为了方便
 const QString srcpaths=":/new/prefix1/images";
 
@@ -13,10 +14,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     setCentralWidget(mdiArea);
 
-    connect(mdiArea,SIGNAL(subWindowActivated(QMdiSubWindow*)),this,SLOT(updateMenus()));
+   //@ connect(mdiArea,SIGNAL(subWindowActivated(QMdiSubWindow*)),this,SLOT(updateMenus()));
+    connect(mdiArea, &QMdiArea::subWindowActivated,
+            this, [this](QMdiSubWindow *) {
+                updateMenus();
+            });
     windowMapper=new QSignalMapper(this);
-    connect(windowMapper,SIGNAL(mappped(QWidget*)),this,SLOT(setActiveSubWindow(QWidget*)));
-
+    connect(windowMapper,SIGNAL(mapped(QWidget*)),this,SLOT(setActiveSubWindow(QWidget*)));
+    //connect(windowMapper,&QSignalMapper::mapped,this,&MainWindow::setActiveSubWindow);
     createActions();//创建菜单栏,工具栏,状态栏,等相关操作(动作集合)
 
     createMenus();//调用创建菜单实现
@@ -25,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     ui->setupUi(this);
-    move(500,500);
+   // move(500,500);
     resize(900,600);
     setWindowTitle("Office办公自动化编辑软件 V2.1");
     setUnifiedTitleAndToolBarOnMac(true);
@@ -95,49 +100,68 @@ void MainWindow::updateWindowMenu()//更新窗口菜单
     separatorAct->setVisible(!windows.isEmpty());
 
     //显示当前打开着的文档子窗口项
-    for(int i=1;i<windows.size();i++)
+    for(int i=0;i<windows.size();++i)
     {
         MyChild*child=qobject_cast<MyChild*>(windows.at(i)->widget());
 
         QString text;
         if(i<9){
-            text=tr("&%1 %2").arg(i+1).arg(child->userFriedlyCurrentFile());
+            text=tr("&%1 %2").arg(i+1).arg(child->userFriendlyCurrentFile());
         }
     else {
         text=tr("&%1 %2").arg(i+1).arg(child->userFriendlyCurrentFile());
     }
         QAction *action=windowMenu->addAction(text);
         action->setCheckable(true);
-        action->setCheckable(child==activeMyChild());
-        connect(action,&QAction::triggered,this,&windowMapper::map);
-        windowMapper->setMapping(action,windows,at(i));
+        action->setChecked(child == activeMyChild());
+        //connect(action,&QAction::triggered,this,&windowMapper::map);
+        //connect(action, SIGNAL(triggered()),windowMapper, SLOT(map()));//@
+        //windowMapper->setMapping(action,windows.at(i));//@
+        connect(action, &QAction::triggered, this, [=]() {
+            mdiArea->setActiveSubWindow(windows.at(i));
+
+        });
+
 
 }
+}
 
-MyCHILD *MainWindow::createMyCHILD()
+MyChild *MainWindow::createMyChild()
 {
-    MyCHILD *child= new MyCHILD;
+    MyChild *child= new MyChild;
+    mdiArea->addSubWindow(child);
+    //connect(child,SIGNAL(copyAvailable(bool)),cutAct,SLOT(setEnabled(bool)));
+    //connect(child,SIGNAL(copyAvailable(bool)),copyAct,SLOT(setEnabled(bool)));
+    // 新语法写法：
+        // connect(发送者, &发送者类::信号, 接收者, &接收者类::槽);
+        connect(child, &MyChild::copyAvailable, cutAct, &QAction::setEnabled);
+        connect(child, &MyChild::copyAvailable, copyAct, &QAction::setEnabled);
+    // 当子窗口有文字选中时，更新主窗口的“复制/剪切”菜单状态
+   //connect(child->textCursor(), &QTextCursor::selectionChanged,
+                //this, &MainWindow::updateMenus);
+        child->show();
+
     return child;
 }
 void MainWindow::createActions()//创建菜单操作(动作)
 {
     //<文件>菜单动作
     //新建
-    newAct=new QAction(QIcon(srcpaths+"/filenew.pgn"),tr("新建(&N)"),this);
+    newAct=new QAction(QIcon(srcpaths+"/filenew.png"),tr("新建(&N)"),this);
     newAct->setShortcut(QKeySequence::New);
     newAct->setToolTip("新建");//设置工具栏按扭的提示文本信息
     newAct->setStatusTip(tr("创建一个新的word文档"));//设置装填栏提示文本信息
-    connect(newAct,SIGNAL(triggered()),this,SLOT(fileNew()));
+    connect(newAct,&QAction::triggered,this,&MainWindow::fileNew);
 
     //打开
-    openAct=new QAction(QIcon(srcpaths+"/fileopen.pgn"),tr("打开(&O)"),this);
+    openAct=new QAction(QIcon(srcpaths+"/fileopen.png"),tr("打开(&O)"),this);
     openAct->setShortcut(QKeySequence::Open);
     openAct->setToolTip("打开");
     openAct->setStatusTip(tr("打开已经存在的word文档"));
     connect(openAct,&QAction::triggered,this,&MainWindow::fileOpen);
 
     //保存
-    saveAct=new QAction(QIcon(srcpaths+"/filesave.pgn"),tr("保存(&S)"),this);
+    saveAct=new QAction(QIcon(srcpaths+"/filesave.png"),tr("保存(&S)"),this);
     saveAct->setShortcut(QKeySequence::Save);
     saveAct->setToolTip("保存");
     saveAct->setStatusTip(tr("将当前word文档存盘"));
@@ -147,10 +171,10 @@ void MainWindow::createActions()//创建菜单操作(动作)
     saveAsAct=new QAction(tr("另存为(&A)..."),this);
     saveAsAct->setShortcut(QKeySequence::SaveAs);
     saveAsAct->setStatusTip("将此文件以另一种文件名称保存");
-    connect(saveAsAct,&QAction::trigger,this,&MainWindow::fileSaveAS);
+    connect(saveAsAct,&QAction::triggered,this,&MainWindow::fileSaveAS);
 
     //打印
-    printAct=new QAction(QIcon(srcpaths+"/fileprint.pgn"),tr("保存(&P)"),this);
+    printAct=new QAction(QIcon(srcpaths+"/fileprint.png"),tr("保存(&P)"),this);
     printAct->setShortcut(QKeySequence::Print);
     printAct->setToolTip("打印");
     printAct->setStatusTip(tr("打印一个word文档"));
@@ -160,6 +184,11 @@ void MainWindow::createActions()//创建菜单操作(动作)
     printPreviewAct=new QAction(tr("打印预览..."),this);
     printPreviewAct->setStatusTip(tr("打印预览当前word文档效果"));
     connect(printPreviewAct,&QAction::triggered,this,&MainWindow::filePrintPreview);
+
+    //退出
+    exitAct=new QAction(tr("退出(X)"),this);
+    exitAct->setStatusTip(tr("退出当前程序"));
+    connect(exitAct,&QAction::triggered,this,&MainWindow::exitAct);
 
     //<编辑>菜单动作
     //撤销
@@ -191,7 +220,7 @@ void MainWindow::createActions()//创建菜单操作(动作)
     connect(pasteAct,&QAction::triggered,this,&MainWindow::paste);
 
     //重做
-    redoAct=new QAction(QIcon(srcpaths+"/eidtredo.png"),tr("重做(&Y)"),this);
+    redoAct=new QAction(QIcon(srcpaths+"/editredo.png"),tr("重做(&Y)"),this);
     redoAct->setShortcut(QKeySequence::Redo);
     redoAct->setToolTip("重做");
     redoAct->setStatusTip(tr("重做此前动作"));
@@ -199,7 +228,7 @@ void MainWindow::createActions()//创建菜单操作(动作)
 
     //<格式>-->字体菜单动作
     //加粗
-    boldAct=new QAction(QIcon(srcpaths+"/textbold,png"),tr("加粗(&B)"),this);
+    boldAct=new QAction(QIcon(srcpaths+"/textbold.png"),tr("加粗(&B)"),this);
     boldAct->setCheckable(true);
     boldAct->setShortcut(Qt::CTRL +Qt::Key_B);
     boldAct->setToolTip("加粗");
@@ -266,7 +295,7 @@ void MainWindow::createActions()//创建菜单操作(动作)
 
     justifyAct->setShortcut(Qt::CTRL +Qt::Key_J);
     justifyAct->setCheckable(true);
-    justifyAct->setToolTip("右对齐");
+    justifyAct->setToolTip("两端对齐");
     justifyAct->setStatusTip(tr("将文字进行两端对齐"));
 
     QPixmap pix(16,16);
@@ -429,26 +458,42 @@ void MainWindow::createToolBars()//创建工具条
    comboSize->setStatusTip("更改字号");
 
    QFontDatabase db;
-   foreach(int size,db.smoothSizes())
+   foreach(int size,db.standardSizes()){
        comboSize->addItem(QString::number(size));
+   }
 
 }
 void MainWindow::createStatusBars()//创建状态条
 {
-
+ statusBar()->showMessage(tr("准备就绪状态"));
 }
-MyCHILD *MainWindow::activeMyChild()const//激活子窗口
+MyChild *MainWindow::activeMyChild()const//激活子窗口,
 {
-
+    if (QMdiSubWindow *subWindow = mdiArea->activeSubWindow())
+            return qobject_cast<MyChild *>(subWindow->widget());
+        return 0;
 }
 
 
 //打开文件使用
-QMdiSubWindow *MainWindow::findMyChild(const QString &filename)//设置active激活窗口
+QMdiSubWindow *MainWindow::findMyChild(const QString &filename)
 {
+    QString canonicalFilePath=QFileInfo(filename).canonicalFilePath();
+
+    foreach(QMdiSubWindow *window,mdiArea->subWindowList()){
+        MyChild *myChild=qobject_cast<MyChild*>(window->widget());
+
+        if(myChild->currentFile()==canonicalFilePath)
+            return window;
+    }
     return 0;
 }
-
+void MainWindow::setActiveSubWindow(QWidget *window)//设置active激活窗口
+{
+    if(!window)
+        return;
+    mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow*>(window));
+}
 void MainWindow::fileNew()
 {
 
@@ -509,7 +554,7 @@ void MainWindow::textStyle(int styleIndex)
 {
 
 }
-void MainWindow::textFamily(const QString &f)
+void MainWindow::textFamily(const QFont &f)
 {
 
 }

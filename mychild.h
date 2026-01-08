@@ -1,13 +1,13 @@
-#ifndef MYCHILD_H
-#define MYCHILD_H
+#ifndef MYChild_H
+#define MYChild_H
 #include<QMainWindow>
 #include <QTextEdit>
 
 
-class MyCHILD: public QMainWindow
+class MyChild: public QMainWindow
 { Q_OBJECT
 public:
-    explicit MyCHILD(QWidget *parent =nullptr);
+    explicit MyChild(QWidget *parent =nullptr);
 
     QTextCursor textCursor() const;
     bool hasSelection() const;
@@ -22,8 +22,10 @@ public:
     void mergeFormationOnWordOrSelection(const QTextCharFormat &Format);//格式化字体设置
     void setAligin(int align);//对齐
     void setStyle(int style);
+signals:  // 信号声明
+    void copyAvailable(bool yes);
 protected:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 private slots:
     void documentWasModified();
 
@@ -40,4 +42,4 @@ private:
 
 };
 
-#endif // MYCHILD_H
+#endif // MYChild_H

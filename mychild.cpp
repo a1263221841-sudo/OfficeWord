@@ -1,22 +1,27 @@
 #include "mychild.h"
 #include<QtWidgets>
 #include <QMessageBox>
-MyCHILD::MyCHILD(QWidget *parent)
+MyChild::MyChild(QWidget *parent)
      : QMainWindow(parent)
 {
+    textEdit = new QTextEdit(this);
+        setCentralWidget(textEdit);
+
+        // 【核心步骤】当内部编辑器说“可以复制”时，MyChild 也对外喊一声“可以复制”
+        connect(textEdit, &QTextEdit::copyAvailable, this, &MyChild::copyAvailable);
     setAttribute(Qt::WA_DeleteOnClose);//关闭窗口时销毁
      isUntitled=true;
      textEdit = new QTextEdit(this);
          setCentralWidget(textEdit);
 }
-    void MyCHILD:: newFile(){//新建文件
+    void MyChild:: newFile(){//新建文件
         static int sequenceNumber =1;
         isUntitled =true;
         curFile =tr("word文档=%1").arg(sequenceNumber++);
         setWindowTitle(curFile);
 
     }
-    bool MyCHILD::loadFile(const QString &fileName)//导入文件
+    bool MyChild::loadFile(const QString &fileName)//导入文件
     {
     if(fileName.isEmpty()){
     return false;
@@ -38,7 +43,7 @@ MyCHILD::MyCHILD(QWidget *parent)
 }
     return true;
         }
-    bool MyCHILD:: save(){
+    bool MyChild:: save(){
         if(isUntitled){
             return saveAs();
         }else{
@@ -46,7 +51,7 @@ MyCHILD::MyCHILD(QWidget *parent)
         }
     }
     //保存文件
-    bool MyCHILD::saveAs(){//另存为文件
+    bool MyChild::saveAs(){//另存为文件
     QString fileName=QFileDialog::getSaveFileName(this,
     tr("另存为"),curFile,
     tr("HTML 文档(*.html);;所有文件(*.*)"));
@@ -55,7 +60,7 @@ MyCHILD::MyCHILD(QWidget *parent)
    return saveFile(fileName);
     }
 
-    bool MyCHILD::saveFile(QString fileName){
+    bool MyChild::saveFile(QString fileName){
     if(!(fileName.endsWith(".htm",
       Qt::CaseInsensitive)||fileName.endsWith(".html",Qt::CaseInsensitive)))
     {
@@ -68,12 +73,13 @@ MyCHILD::MyCHILD(QWidget *parent)
             setCurrentFile(fileName);
             return success;
     }
-    QString MyCHILD::userFriendlyCurrentFile(){
+    QString MyChild::userFriendlyCurrentFile(){
     return strippedName(curFile);
 
     }
    //格式化字体设置
-    void MyCHILD::mergeFormationOnWordOrSelection(const QTextCharFormat &Format){
+
+    void MyChild::mergeFormationOnWordOrSelection(const QTextCharFormat &Format){
         QTextCursor cursor=textEdit->textCursor();
         if(!cursor.hasSelection()){
             cursor.select(QTextCursor::WordUnderCursor);
@@ -82,7 +88,7 @@ MyCHILD::MyCHILD(QWidget *parent)
         }
     }
     //段落对齐设置
-    void MyCHILD::setAligin(int align){
+    void MyChild::setAligin(int align){
     if(align==1){
         textEdit->setAlignment(Qt::AlignLeft |Qt::AlignAbsolute);
     }else if(align==2){
@@ -95,7 +101,7 @@ MyCHILD::MyCHILD(QWidget *parent)
 
     }
     //断落编号
-    void MyCHILD::setStyle(int style){
+    void MyChild::setStyle(int style){
     //多行文本框文本光标插入文本
          QTextCursor cursor = textEdit->textCursor();
         if(style!=0){
@@ -154,7 +160,7 @@ MyCHILD::MyCHILD(QWidget *parent)
 
     }
 
-    void MyCHILD::closeEvent(QCloseEvent *event){
+    void MyChild::closeEvent(QCloseEvent *event){
     if(maybeSave()){
         event->accept();
     }else{
@@ -162,12 +168,12 @@ MyCHILD::MyCHILD(QWidget *parent)
     }
     }
 
-    void MyCHILD::documentWasModified(){
+    void MyChild::documentWasModified(){
 //在设置改变时,设置窗口已经修改
         setWindowModified(textEdit->document()->isModified());
     }
 
-    bool MyCHILD::maybeSave(){//判断是否修改且保存文件
+    bool MyChild::maybeSave(){//判断是否修改且保存文件
     if(!textEdit->document()->isModified())
        { return true;
     }
@@ -185,7 +191,7 @@ MyCHILD::MyCHILD(QWidget *parent)
         }return true;
 
     }
-    void MyCHILD::setCurrentFile(const QString &fileName){
+    void MyChild::setCurrentFile(const QString &fileName){
         curFile=QFileInfo(fileName).canonicalFilePath();
         isUntitled=false;
         textEdit->document()->setModified(false);
@@ -193,8 +199,19 @@ MyCHILD::MyCHILD(QWidget *parent)
         setWindowTitle(userFriendlyCurrentFile()+"[*]");
 
     }
-    QString MyCHILD::strippedName(const QString &fullfileName){
+    QString MyChild::strippedName(const QString &fullfileName){
     return QFileInfo(fullfileName).fileName();
     }
 
+    // 1. 实现获取光标的函数
+    QTextCursor MyChild::textCursor() const
+    {
+        // 转发给内部的 textEdit 控件
+        return textEdit->textCursor();
+    }
 
+    // 2. 实现判断是否有选中文字的函数
+    bool MyChild::hasSelection() const
+    {
+        return textEdit->textCursor().hasSelection();
+    }
