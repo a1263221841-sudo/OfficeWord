@@ -2,17 +2,17 @@
 #include<QtWidgets>
 #include <QMessageBox>
 MyChild::MyChild(QWidget *parent)
-     : QMainWindow(parent)
+     : QTextEdit(parent)
 {
     textEdit = new QTextEdit(this);
-        setCentralWidget(textEdit);
+        //setCentralWidget(textEdit);
 
         // 【核心步骤】当内部编辑器说“可以复制”时，MyChild 也对外喊一声“可以复制”
         connect(textEdit, &QTextEdit::copyAvailable, this, &MyChild::copyAvailable);
     setAttribute(Qt::WA_DeleteOnClose);//关闭窗口时销毁
      isUntitled=true;
      textEdit = new QTextEdit(this);
-         setCentralWidget(textEdit);
+        // setCentralWidget(textEdit);
 }
     void MyChild:: newFile(){//新建文件
         static int sequenceNumber =1;

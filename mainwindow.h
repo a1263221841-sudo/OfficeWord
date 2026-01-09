@@ -46,6 +46,7 @@ private:
     void filePrint();//打印
     void filePrintPreview();//文件打印预览
     void printPreview(QPrinter *);//打印预览
+    void closeAllWindows();//关闭
 
     void undo();//撤销
     void redo();//重做

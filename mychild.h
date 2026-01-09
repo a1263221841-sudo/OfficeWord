@@ -4,7 +4,7 @@
 #include <QTextEdit>
 
 
-class MyChild: public QMainWindow
+class MyChild: public QTextEdit
 { Q_OBJECT
 public:
     explicit MyChild(QWidget *parent =nullptr);

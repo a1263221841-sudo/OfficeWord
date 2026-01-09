@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-    setCentralWidget(mdiArea);
+    //setCentralWidget(mdiArea);
 
    //@ connect(mdiArea,SIGNAL(subWindowActivated(QMdiSubWindow*)),this,SLOT(updateMenus()));
     connect(mdiArea, &QMdiArea::subWindowActivated,
@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     createToolBars();//调用创建工具栏
 
 
-    ui->setupUi(this);
+    //ui->setupUi(this);
    // move(500,500);
     resize(900,600);
     setWindowTitle("Office办公自动化编辑软件 V2.1");
@@ -187,8 +187,9 @@ void MainWindow::createActions()//创建菜单操作(动作)
 
     //退出
     exitAct=new QAction(tr("退出(X)"),this);
-    exitAct->setStatusTip(tr("退出当前程序"));
-    connect(exitAct,&QAction::triggered,this,&MainWindow::exitAct);
+    exitAct->setShortcuts(QKeySequence::Quit);
+    exitAct->setStatusTip(tr("退出Word文档应用程序"));
+    connect(exitAct,&QAction::triggered,this,&MainWindow::closeAllWindows);
 
     //<编辑>菜单动作
     //撤销
@@ -350,6 +351,7 @@ void MainWindow::createActions()//创建菜单操作(动作)
 }
 void MainWindow::createMenus()//创建菜单
 {
+    //qDebug() << "开始创建菜单...";
     //文件菜单
     fileMenu=menuBar()->addMenu(tr("文件(&F)"));
     fileMenu->addAction(newAct);
@@ -496,102 +498,212 @@ void MainWindow::setActiveSubWindow(QWidget *window)//设置active激活窗口
 }
 void MainWindow::fileNew()
 {
+    MyChild *child=createMyChild();
+    child->newFile();
+    child->show();
+    enableText();//使得字体菜单是可用的
 
 }
 void MainWindow::fileOpen()
 {
+    QString filename=QFileDialog::getOpenFileName(this,tr("打开"),QString(),tr("HTML 文档(*.html);;所有文件(*.*)"));
+    if(!filename.isEmpty()){
+        QMdiSubWindow *existing=findMyChild(filename);
 
+        if(existing)
+        {
+            mdiArea->setActiveSubWindow(existing);
+            return;
+        }
+        MyChild *child=createMyChild();
+        if(child->loadFile(filename))
+        {
+            statusBar()->showMessage(tr("文件已经被加载"),2000);
+            child->show();
+            enableText();
+        }else
+        {
+            child->close();
+        }
+    }
 }
 void MainWindow::fileSave()
 {
-
+    if(activeMyChild() && activeMyChild()->save())
+        statusBar()->showMessage(tr("word文档保存成功."),2000);
 }
 void MainWindow::fileSaveAS()
 {
-
+    if(activeMyChild()&&activeMyChild()->saveAs())
+        statusBar()->showMessage(tr("Word文档另存为为成功"));
 }
-void MainWindow::undo()
+void MainWindow::undo()//撤销
 {
-
+    if(activeMyChild())
+        activeMyChild()->undo();
 }
-void MainWindow::redo()
+void MainWindow::redo()//重做
 {
-
+    if(activeMyChild())
+        activeMyChild()->redo();
 }
 void MainWindow::cut()
 {
-
+    if(activeMyChild())
+        activeMyChild()->cut();
 }
 void MainWindow::copy()
 {
-
+    if(activeMyChild())
+        activeMyChild()->copy();
 }
 void MainWindow::paste()
 {
-
+    if(activeMyChild())
+        activeMyChild()->paste();
 }
-void MainWindow::enableText()
+void MainWindow::enableText()//使得格式下的各个子菜单项可用
 {
+    boldAct->setEnabled(true);
+    italicAct->setEnabled(true);
+    underlineAct->setEnabled(true);
+    leftAlignAct->setEnabled(true);
+    centerAct->setEnabled(true);
+    rightAlignAct->setEnabled(true);
+    justifyAct->setEnabled(true);
+    colorAct->setEnabled(true);
 
 }
 void MainWindow::textBold()
 {
+    QTextCharFormat fmt;
+    fmt.setFontWeight(boldAct->isChecked()?QFont::Bold:QFont::Normal);
+    if(activeMyChild())
+        activeMyChild()->mergeFormationOnWordOrSelection(fmt);
 
 }
 void MainWindow::textItalic()
 {
+ QTextCharFormat fmt;
+ fmt.setFontItalic(italicAct->isChecked());
+ if(activeMyChild())
+     activeMyChild()->mergeFormationOnWordOrSelection(fmt);
 
 }
 void MainWindow::textUnderline()
 {
-
+    QTextCharFormat fmt;
+    fmt.setFontItalic(underlineAct->isChecked());
+    if(activeMyChild())
+        activeMyChild()->mergeFormationOnWordOrSelection(fmt);
 }
-void MainWindow::textAlign(QAction *a)
+void MainWindow::textAlign(QAction *a)//文本对齐判断函数
 {
+    if(activeMyChild())
+    {
+        if(a==leftAlignAct)
+            activeMyChild()->setAligin(1);
+        else if(a==centerAct)
+            activeMyChild()->setAligin(2);
+        else if(a==rightAlignAct)
+            activeMyChild()->setAligin(3);
+        else if(a==justifyAct)
+            activeMyChild()->setAligin(4);
 
+    }
 }
-void MainWindow::textStyle(int styleIndex)
+void MainWindow::textStyle(int styleIndex) //文本样式
 {
-
+    if(activeMyChild())
+    activeMyChild()->setStyle(styleIndex);
 }
 void MainWindow::textFamily(const QFont &f)
 {
-
+    QTextCharFormat fmt;
+    // 关键改动：使用 f.family() 获取字符串
+        fmt.setFontFamily(f.family());
+   // fmt.setFontFamily(f);
+    if(activeMyChild())
+        activeMyChild()->mergeFormationOnWordOrSelection(fmt);
 }
 void MainWindow::textSize(const QString &p)
 {
-
+    qreal pointsize=p.toFloat();
+    if(p.toFloat()>0){
+        QTextCharFormat fmt;
+        fmt.setFontPointSize(pointsize);
+        if(activeMyChild())
+            activeMyChild()->mergeFormationOnWordOrSelection(fmt);
+    }
 }
 void MainWindow::textColor()
 {
-
+    if(activeMyChild())
+    {
+        QColor color=QColorDialog::getColor(activeMyChild()->textColor(),this);
+        return;
+        QTextCharFormat fmt;
+        fmt.setForeground(color);
+        activeMyChild()->mergeFormationOnWordOrSelection(fmt);
+        colorChanged(color);
+    }
 }
 void MainWindow::fontChanged(const QFont &f)
 {
+    comboFont->setCurrentIndex(comboFont->findText(QFontInfo(f).family()));
+    comboSize->setCurrentIndex(comboSize->findText(QString::number(f.pointSize())));
+
+    boldAct->setChecked(f.bold());
+    italicAct->setChecked(f.italic());
+    underlineAct->setChecked(f.underline());
 
 }
 void MainWindow::colorChanged(const QColor &c)
 {
-
+    QPixmap pix (16,16);
+    pix.fill(c);
+    colorAct->setIcon(pix);
 }
-void MainWindow::alignmentChanged(Qt::Alignment a)
+void MainWindow::alignmentChanged(Qt::Alignment a)//对齐判断
 {
+    if(a & Qt::AlignLeft)
+        leftAlignAct->setChecked(true);
+    else if(a& Qt::AlignCenter)
+        centerAct->setChecked(true);
+    else if(a& Qt::AlignRight)
+        rightAlignAct->setChecked(true);
+    else if(a& Qt::AlignJustify)
+        justifyAct->setChecked(true);
 
 }
-
 void MainWindow::filePrint()
 {
-
+    QPrinter printer(QPrinter::HighResolution);
+    QPrintDialog *pdlg =new QPrintDialog(&printer,this);
+    if(activeMyChild()->textCursor().hasSelection())
+        pdlg->addEnabledOption(QAbstractPrintDialog::PrintSelection);
+    pdlg->setWhatsThis(tr("打印文档"));
+    if(pdlg->exec()==QDialog::Accepted)
+        activeMyChild()->print(&printer);
+    delete pdlg;
 }
 void MainWindow::filePrintPreview()
 {
-
+    QPrinter printer(QPrinter::HighResolution);
+    QPrintPreviewDialog preview(&printer,this);
+    connect(&preview, &QPrintPreviewDialog::paintRequested, this, &MainWindow::printPreview);
+    // 4. 显示预览窗口（执行模态对话框）
+        preview.exec();
 }
 void MainWindow::printPreview(QPrinter *printer)
 {
-
+    activeMyChild()->print(printer);
 }
-void MainWindow::about()
+void MainWindow::closeAllWindows()
 {
-
+    mdiArea->closeAllSubWindows();
+}
+void MainWindow::about()//关于
+{
+    QMessageBox::about(this,tr("关于"),tr("此软件是基于Qt5实现的文字处理软件"));
 }
